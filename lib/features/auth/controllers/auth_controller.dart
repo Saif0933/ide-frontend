@@ -36,6 +36,31 @@ class AuthController extends ChangeNotifier {
     }
   }
 
+  Future<bool> signInWithPassword(String usernameOrEmail, String password) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final user = await _backendService.signInWithPassword(usernameOrEmail, password);
+      _user = user;
+      await _storage.setString('auth_token', 'jwt_session_token_${user.id}');
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } on AppException catch (e) {
+      _errorMessage = e.message;
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    } catch (e) {
+      _errorMessage = 'Authentication failed. Please check your credentials.';
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
   Future<bool> requestOtp(String emailOrPhone) async {
     _isLoading = true;
     _errorMessage = null;

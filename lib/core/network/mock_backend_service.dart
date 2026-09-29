@@ -313,6 +313,25 @@ if __name__ == "__main__":
   }
 
   // Auth Simulation
+  Future<UserModel> signInWithPassword(String usernameOrEmail, String password) async {
+    await Future.delayed(const Duration(milliseconds: 600));
+    if (usernameOrEmail.trim().isEmpty) {
+      throw ValidationException('Please enter your email or username');
+    }
+    if (password.trim().isEmpty) {
+      throw ValidationException('Please enter your password');
+    }
+    _currentUser = UserModel(
+      id: 'usr_001',
+      name: usernameOrEmail.contains('@') ? usernameOrEmail.split('@')[0] : usernameOrEmail,
+      email: usernameOrEmail.contains('@') ? usernameOrEmail : 'alex.rivera@dev.io',
+      phone: '+1 (555) 321-9876',
+      role: 'developer',
+      createdAt: DateTime.now(),
+    );
+    return _currentUser!;
+  }
+
   Future<bool> requestOtp(String emailOrPhone) async {
     await Future.delayed(const Duration(milliseconds: 600));
     return true;
