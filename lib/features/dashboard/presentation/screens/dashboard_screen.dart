@@ -155,7 +155,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       NewsArticle(
         id: 'news_4',
-        title: 'Renewable Energy Milestone: Solar Power Grid Capacity Crosses 80GW',
+        title:
+            'Renewable Energy Milestone: Solar Power Grid Capacity Crosses 80GW',
         description:
             'Clean energy installations reach new heights with record solar rooftop additions across states.',
         category: 'Technology',
@@ -170,7 +171,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       NewsArticle(
         id: 'news_5',
-        title: 'Parliamentary Committee Reviews National Digital Infrastructure Bill',
+        title:
+            'Parliamentary Committee Reviews National Digital Infrastructure Bill',
         description:
             'Bipartisan discussions advance new framework for secure data networks and cyber sovereignty.',
         category: 'Politics',
@@ -188,13 +190,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   List<NewsArticle> get _filteredArticles {
     return _allArticles.where((article) {
-      final matchesCategory = _selectedCategory == 'All' ||
+      final matchesCategory =
+          _selectedCategory == 'All' ||
           _selectedCategory == 'Top News' ||
           article.category.toLowerCase() == _selectedCategory.toLowerCase();
 
-      final matchesSearch = _searchQuery.isEmpty ||
+      final matchesSearch =
+          _searchQuery.isEmpty ||
           article.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          article.description.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          article.description.toLowerCase().contains(
+            _searchQuery.toLowerCase(),
+          ) ||
           article.category.toLowerCase().contains(_searchQuery.toLowerCase());
 
       return matchesCategory && matchesSearch;
@@ -205,23 +211,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
     setState(() {
       article.isBookmarked = !article.isBookmarked;
     });
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
           article.isBookmarked
               ? 'Saved to Bookmarks'
               : 'Removed from Bookmarks',
-          style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
         ),
         duration: const Duration(seconds: 1),
         behavior: SnackBarBehavior.floating,
-        backgroundColor: const Color(0xFF1E293B),
+        backgroundColor: isDark
+            ? const Color(0xFF334155)
+            : const Color(0xFF1E293B),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
   }
 
   void _openArticleDetails(NewsArticle article) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -231,9 +245,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
         maxChildSize: 0.95,
         minChildSize: 0.5,
         builder: (_, scrollController) => Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1E293B) : Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            border: Border.all(
+              color: isDark ? const Color(0xFF334155) : Colors.transparent,
+              width: 1,
+            ),
           ),
           child: ListView(
             controller: scrollController,
@@ -244,7 +262,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   width: 44,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
+                    color: isDark
+                        ? const Color(0xFF475569)
+                        : Colors.grey.shade300,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -257,10 +277,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   child: Image.network(
                     article.imageUrl,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
-                      color: Colors.grey.shade200,
-                      child: const Center(
-                        child: Icon(Icons.newspaper_rounded, size: 48, color: Colors.grey),
+                    errorBuilder: (_, _, _) => Container(
+                      color: isDark
+                          ? const Color(0xFF0F172A)
+                          : Colors.grey.shade200,
+                      child: Icon(
+                        Icons.newspaper_rounded,
+                        size: 48,
+                        color: isDark ? Colors.grey.shade600 : Colors.grey,
                       ),
                     ),
                   ),
@@ -270,9 +294,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
-                      color: article.categoryColor.withValues(alpha: 0.12),
+                      color: article.categoryColor.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
@@ -287,17 +314,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   const Spacer(),
                   Text(
                     '${article.timeAgo}  •  ${article.location}',
-                    style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                    style: TextStyle(
+                      color: isDark
+                          ? const Color(0xFF94A3B8)
+                          : Colors.grey.shade600,
+                      fontSize: 12,
+                    ),
                   ),
                 ],
               ),
               const SizedBox(height: 14),
               Text(
                 article.title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF111827),
+                  color: isDark
+                      ? const Color(0xFFF8FAFC)
+                      : const Color(0xFF111827),
                   height: 1.3,
                 ),
               ),
@@ -307,16 +341,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: Colors.grey.shade700,
+                  color: isDark
+                      ? const Color(0xFF94A3B8)
+                      : Colors.grey.shade700,
                 ),
               ),
-              const Divider(height: 28),
+              Divider(
+                height: 28,
+                color: isDark
+                    ? const Color(0xFF334155)
+                    : const Color(0xFFE5E7EB),
+              ),
               Text(
                 article.fullContent,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 15,
                   height: 1.6,
-                  color: Color(0xFF374151),
+                  color: isDark
+                      ? const Color(0xFFCBD5E1)
+                      : const Color(0xFF374151),
                 ),
               ),
               const SizedBox(height: 24),
@@ -326,18 +369,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     child: OutlinedButton.icon(
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        side: BorderSide(color: Colors.grey.shade300),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        side: BorderSide(
+                          color: isDark
+                              ? const Color(0xFF475569)
+                              : Colors.grey.shade300,
+                        ),
                       ),
                       onPressed: () => _toggleBookmark(article),
                       icon: Icon(
-                        article.isBookmarked ? Icons.bookmark : Icons.bookmark_border_rounded,
+                        article.isBookmarked
+                            ? Icons.bookmark
+                            : Icons.bookmark_border_rounded,
                         color: const Color(0xFFE53935),
                       ),
                       label: Text(
                         article.isBookmarked ? 'Bookmarked' : 'Save Story',
-                        style: const TextStyle(
-                          color: Color(0xFF111827),
+                        style: TextStyle(
+                          color: isDark
+                              ? Colors.white
+                              : const Color(0xFF111827),
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -349,7 +402,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFE53935),
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         elevation: 0,
                       ),
                       onPressed: () => Navigator.of(ctx).pop(),
@@ -374,48 +429,41 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Theme(
-      data: ThemeData.light().copyWith(
-        primaryColor: const Color(0xFFE53935),
-        scaffoldBackgroundColor: Colors.white,
-        textSelectionTheme: const TextSelectionThemeData(
-          cursorColor: Color(0xFFE53935),
-          selectionColor: Color(0x4DE53935),
-          selectionHandleColor: Color(0xFFE53935),
-        ),
-      ),
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        body: SafeArea(
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.only(bottom: 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 8),
-                _buildTopHeader(),
-                const SizedBox(height: 16),
-                _buildSearchBar(),
-                const SizedBox(height: 16),
-                _buildCategoriesRow(),
-                const SizedBox(height: 18),
-                if (_searchQuery.isEmpty && (_selectedCategory == 'All' || _selectedCategory == 'Top News')) ...[
-                  _buildTopStoryHeroCard(),
-                  const SizedBox(height: 24),
-                ],
-                _buildTopNewsSectionHeader(),
-                const SizedBox(height: 12),
-                _buildNewsArticlesList(),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Scaffold(
+      backgroundColor: isDark ? const Color(0xFF0F172A) : Colors.white,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.only(bottom: 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 8),
+              _buildTopHeader(isDark),
+              const SizedBox(height: 16),
+              _buildSearchBar(isDark),
+              const SizedBox(height: 16),
+              _buildCategoriesRow(isDark),
+              const SizedBox(height: 18),
+              if (_searchQuery.isEmpty &&
+                  (_selectedCategory == 'All' ||
+                      _selectedCategory == 'Top News')) ...[
+                _buildTopStoryHeroCard(isDark),
+                const SizedBox(height: 24),
               ],
-            ),
+              _buildTopNewsSectionHeader(isDark),
+              const SizedBox(height: 12),
+              _buildNewsArticlesList(isDark),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildTopHeader() {
+  Widget _buildTopHeader(bool isDark) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
@@ -429,7 +477,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFFE53935).withValues(alpha: 0.25),
+                  color: const Color(0xFFE53935).withValues(alpha: 0.3),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -449,18 +497,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 RichText(
-                  text: const TextSpan(
+                  text: TextSpan(
                     children: [
                       TextSpan(
                         text: 'News',
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.w900,
-                          color: Color(0xFF111827),
+                          color: isDark
+                              ? Colors.white
+                              : const Color(0xFF111827),
                           letterSpacing: -0.5,
                         ),
                       ),
-                      TextSpan(
+                      const TextSpan(
                         text: 'Hub',
                         style: TextStyle(
                           fontSize: 22,
@@ -473,12 +523,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                 ),
                 const SizedBox(height: 1),
-                const Text(
+                Text(
                   'Latest News, Always With You',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
-                    color: Color(0xFF6B7280),
+                    color: isDark
+                        ? const Color(0xFF94A3B8)
+                        : const Color(0xFF6B7280),
                   ),
                 ),
               ],
@@ -492,24 +544,41 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF9FAFB),
+                  color: isDark
+                      ? const Color(0xFF1E293B)
+                      : const Color(0xFFF9FAFB),
                   shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFFE5E7EB), width: 1),
+                  border: Border.all(
+                    color: isDark
+                        ? const Color(0xFF334155)
+                        : const Color(0xFFE5E7EB),
+                    width: 1,
+                  ),
                 ),
                 child: IconButton(
                   padding: EdgeInsets.zero,
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.notifications_none_rounded,
-                    color: Color(0xFF1F2937),
+                    color: isDark ? Colors.white : const Color(0xFF1F2937),
                     size: 22,
                   ),
                   onPressed: () {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: const Text('You have 3 unread news alerts', style: TextStyle(color: Colors.white)),
+                        content: const Text(
+                          'You have 3 unread news alerts',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                         behavior: SnackBarBehavior.floating,
-                        backgroundColor: const Color(0xFF1F2937),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        backgroundColor: isDark
+                            ? const Color(0xFF334155)
+                            : const Color(0xFF1F2937),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
                     );
                   },
@@ -535,13 +604,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: const Color(0xFFE5E7EB),
+              color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE5E7EB),
               shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFFD1D5DB), width: 1),
+              border: Border.all(
+                color: isDark
+                    ? const Color(0xFF334155)
+                    : const Color(0xFFD1D5DB),
+                width: 1,
+              ),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.person_rounded,
-              color: Color(0xFF6B7280),
+              color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF6B7280),
               size: 24,
             ),
           ),
@@ -550,23 +624,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildSearchBar() {
+  Widget _buildSearchBar(bool isDark) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
         height: 48,
         decoration: BoxDecoration(
-          color: const Color(0xFFF9FAFB),
+          color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF9FAFB),
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: const Color(0xFFE5E7EB), width: 1),
+          border: Border.all(
+            color: isDark ? const Color(0xFF334155) : const Color(0xFFE5E7EB),
+            width: 1,
+          ),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 14),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const Icon(
+            Icon(
               Icons.search_rounded,
-              color: Color(0xFF9CA3AF),
+              color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF9CA3AF),
               size: 22,
             ),
             const SizedBox(width: 10),
@@ -580,10 +657,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     _searchQuery = val;
                   });
                 },
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   hintText: 'Search news, topics, or keywords...',
                   hintStyle: TextStyle(
-                    color: Color(0xFF9CA3AF),
+                    color: isDark
+                        ? const Color(0xFF64748B)
+                        : const Color(0xFF9CA3AF),
                     fontSize: 14,
                     fontWeight: FontWeight.normal,
                   ),
@@ -593,10 +672,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   errorBorder: InputBorder.none,
                   disabledBorder: InputBorder.none,
                   isDense: true,
-                  contentPadding: EdgeInsets.symmetric(vertical: 12),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 12),
                 ),
-                style: const TextStyle(
-                  color: Color(0xFF111827),
+                style: TextStyle(
+                  color: isDark ? Colors.white : const Color(0xFF111827),
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
@@ -608,19 +687,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   _searchController.clear();
                   setState(() => _searchQuery = '');
                 },
-                child: const Padding(
-                  padding: EdgeInsets.all(4),
+                child: Padding(
+                  padding: const EdgeInsets.all(4),
                   child: Icon(
                     Icons.close_rounded,
-                    color: Color(0xFF9CA3AF),
+                    color: isDark
+                        ? const Color(0xFF94A3B8)
+                        : const Color(0xFF9CA3AF),
                     size: 20,
                   ),
                 ),
               )
             else
-              const Icon(
+              Icon(
                 Icons.mic_none_rounded,
-                color: Color(0xFF6B7280),
+                color: isDark
+                    ? const Color(0xFF94A3B8)
+                    : const Color(0xFF6B7280),
                 size: 22,
               ),
           ],
@@ -629,7 +712,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildCategoriesRow() {
+  Widget _buildCategoriesRow(bool isDark) {
     return SizedBox(
       height: 38,
       child: ListView.separated(
@@ -637,7 +720,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
         itemCount: _categories.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        separatorBuilder: (_, _) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
           final cat = _categories[index];
           final isSelected = _selectedCategory == cat;
@@ -648,14 +731,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
               duration: const Duration(milliseconds: 200),
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
               decoration: BoxDecoration(
-                color: isSelected ? const Color(0xFFE53935) : const Color(0xFFF3F4F6),
+                color: isSelected
+                    ? const Color(0xFFE53935)
+                    : (isDark
+                          ? const Color(0xFF1E293B)
+                          : const Color(0xFFF3F4F6)),
                 borderRadius: BorderRadius.circular(20),
+                border: isSelected
+                    ? null
+                    : Border.all(
+                        color: isDark
+                            ? const Color(0xFF334155)
+                            : Colors.transparent,
+                        width: 1,
+                      ),
               ),
               child: Center(
                 child: Text(
                   cat,
                   style: TextStyle(
-                    color: isSelected ? Colors.white : const Color(0xFF374151),
+                    color: isSelected
+                        ? Colors.white
+                        : (isDark
+                              ? const Color(0xFFCBD5E1)
+                              : const Color(0xFF374151)),
                     fontSize: 13,
                     fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                   ),
@@ -668,7 +767,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildTopStoryHeroCard() {
+  Widget _buildTopStoryHeroCard(bool isDark) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: GestureDetector(
@@ -679,7 +778,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             borderRadius: BorderRadius.circular(18),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.08),
+                color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
                 blurRadius: 16,
                 offset: const Offset(0, 6),
               ),
@@ -694,7 +793,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Image.network(
                   _topStory.imageUrl,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
+                  errorBuilder: (_, _, _) => Container(
                     decoration: const BoxDecoration(
                       gradient: LinearGradient(
                         colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
@@ -728,7 +827,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     children: [
                       // Top Story Badge
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 5,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFFE53935),
                           borderRadius: BorderRadius.circular(14),
@@ -789,19 +891,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildTopNewsSectionHeader() {
+  Widget _buildTopNewsSectionHeader(bool isDark) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const Text(
+          Text(
             'Top News',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF111827),
+              color: isDark ? const Color(0xFFF8FAFC) : const Color(0xFF111827),
               letterSpacing: -0.3,
             ),
           ),
@@ -838,7 +940,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildNewsArticlesList() {
+  Widget _buildNewsArticlesList(bool isDark) {
     final articles = _filteredArticles;
 
     if (articles.isEmpty) {
@@ -847,11 +949,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
         alignment: Alignment.center,
         child: Column(
           children: [
-            Icon(Icons.search_off_rounded, size: 48, color: Colors.grey.shade400),
+            Icon(
+              Icons.search_off_rounded,
+              size: 48,
+              color: isDark ? const Color(0xFF475569) : Colors.grey.shade400,
+            ),
             const SizedBox(height: 12),
             Text(
               'No news found for "$_searchQuery"',
-              style: TextStyle(fontSize: 14, color: Colors.grey.shade600, fontWeight: FontWeight.w500),
+              style: TextStyle(
+                fontSize: 14,
+                color: isDark ? const Color(0xFF94A3B8) : Colors.grey.shade600,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ],
         ),
@@ -863,25 +973,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
       physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 16),
       itemCount: articles.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 14),
+      separatorBuilder: (_, _) => const SizedBox(height: 14),
       itemBuilder: (context, index) {
-        return _buildNewsCard(articles[index]);
+        return _buildNewsCard(articles[index], isDark);
       },
     );
   }
 
-  Widget _buildNewsCard(NewsArticle article) {
+  Widget _buildNewsCard(NewsArticle article, bool isDark) {
     return GestureDetector(
       onTap: () => _openArticleDetails(article),
       child: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isDark ? const Color(0xFF1E293B) : Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFF1F5F9), width: 1),
+          border: Border.all(
+            color: isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9),
+            width: 1,
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.03),
+              color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
               blurRadius: 10,
               offset: const Offset(0, 2),
             ),
@@ -902,11 +1015,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     Image.network(
                       article.imageUrl,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        color: const Color(0xFFF3F4F6),
-                        child: const Icon(
+                      errorBuilder: (_, _, _) => Container(
+                        color: isDark
+                            ? const Color(0xFF0F172A)
+                            : const Color(0xFFF3F4F6),
+                        child: Icon(
                           Icons.image_outlined,
-                          color: Color(0xFF9CA3AF),
+                          color: isDark
+                              ? const Color(0xFF64748B)
+                              : const Color(0xFF9CA3AF),
                           size: 28,
                         ),
                       ),
@@ -916,7 +1033,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         bottom: 6,
                         right: 6,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.black.withValues(alpha: 0.75),
                             borderRadius: BorderRadius.circular(4),
@@ -963,7 +1083,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           size: 20,
                           color: article.isBookmarked
                               ? const Color(0xFFE53935)
-                              : const Color(0xFF64748B),
+                              : (isDark
+                                    ? const Color(0xFF94A3B8)
+                                    : const Color(0xFF64748B)),
                         ),
                       ),
                     ],
@@ -974,8 +1096,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     article.title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Color(0xFF111827),
+                    style: TextStyle(
+                      color: isDark
+                          ? const Color(0xFFF8FAFC)
+                          : const Color(0xFF111827),
                       fontSize: 13.5,
                       fontWeight: FontWeight.bold,
                       height: 1.25,
@@ -987,8 +1111,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     article.description,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Color(0xFF64748B),
+                    style: TextStyle(
+                      color: isDark
+                          ? const Color(0xFF94A3B8)
+                          : const Color(0xFF64748B),
                       fontSize: 11.5,
                       height: 1.3,
                     ),
@@ -997,8 +1123,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   // Footer Meta
                   Text(
                     '${article.timeAgo}  |  ${article.location}',
-                    style: const TextStyle(
-                      color: Color(0xFF94A3B8),
+                    style: TextStyle(
+                      color: isDark
+                          ? const Color(0xFF64748B)
+                          : const Color(0xFF94A3B8),
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
                     ),

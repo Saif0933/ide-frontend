@@ -574,7 +574,7 @@ if __name__ == "__main__":
       path: parentId != null ? '$parentId/$name' : name,
       size: 0,
       version: 1,
-      content: type == FileNodeType.file ? '# Created in PyStudio\n\n' : '',
+      content: '',
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
     );

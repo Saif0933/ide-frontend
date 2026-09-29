@@ -11,13 +11,14 @@ void main() async {
   // Initialize storage cache
   await LocalStorageService().init();
 
-  // Set system UI overlay style for dark developer theme
+  // Set transparent system overlays for seamless dynamic theme switching
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.light,
-      systemNavigationBarColor: Color(0xFF161B22),
-      systemNavigationBarIconBrightness: Brightness.light,
+      statusBarIconBrightness: Brightness.dark,
+      statusBarBrightness: Brightness.light,
+      systemNavigationBarColor: Colors.transparent,
+      systemNavigationBarIconBrightness: Brightness.dark,
     ),
   );
 
@@ -49,10 +50,11 @@ class _PyStudioAppState extends State<PyStudioApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'PyStudio IDE',
+      title: 'NewsHub',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.darkTheme,
-      themeMode: ThemeMode.dark,
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.system, // Automatically switches between Light and Dark mode based on phone's system settings
       home: SplashScreen(authController: _authController),
     );
   }

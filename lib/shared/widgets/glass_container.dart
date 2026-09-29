@@ -23,16 +23,27 @@ class GlassContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     Widget content = Container(
       margin: margin,
       padding: padding,
       decoration: BoxDecoration(
-        color: backgroundColor ?? AppColors.surface,
+        color: backgroundColor ?? (isDark ? AppColors.surface : Colors.white),
         borderRadius: BorderRadius.circular(borderRadius),
         border: Border.all(
-          color: borderColor ?? AppColors.surfaceBorder,
+          color: borderColor ?? (isDark ? AppColors.surfaceBorder : const Color(0xFFE5E7EB)),
           width: 1,
         ),
+        boxShadow: isDark
+            ? null
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.03),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
+                ),
+              ],
       ),
       child: child,
     );
@@ -43,7 +54,7 @@ class GlassContainer extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(borderRadius),
-          hoverColor: AppColors.surfaceHover,
+          hoverColor: isDark ? AppColors.surfaceHover : const Color(0xFFF1F5F9),
           child: content,
         ),
       );

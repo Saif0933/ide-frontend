@@ -17,6 +17,7 @@ class ConversationsListScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDesktop = Responsive.isDesktop(context);
     final isMobile = Responsive.isMobile(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return AnimatedBuilder(
       animation: projectController,
@@ -24,30 +25,42 @@ class ConversationsListScreen extends StatelessWidget {
         final projects = projectController.projects;
 
         return Scaffold(
-          backgroundColor: AppColors.background,
+          backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
           appBar: AppBar(
-            title: const Text('Developer Collaboration'),
+            backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+            title: Text(
+              'Developer Collaboration',
+              style: TextStyle(
+                color: isDark ? Colors.white : const Color(0xFF111827),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             centerTitle: false,
           ),
           body: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 1000),
               child: projects.isEmpty
-                  ? const Center(
+                  ? Center(
                       child: Text(
                         'No active project chats yet.\nCreate a project to start collaborating!',
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: AppColors.textMuted),
+                        style: TextStyle(
+                          color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                        ),
                       ),
                     )
                   : isMobile
                       ? ListView.separated(
                           padding: const EdgeInsets.symmetric(vertical: 8),
                           itemCount: projects.length,
-                          separatorBuilder: (context, index) => const Divider(height: 1),
+                          separatorBuilder: (context, index) => Divider(
+                            height: 1,
+                            color: isDark ? const Color(0xFF334155) : const Color(0xFFE5E7EB),
+                          ),
                           itemBuilder: (context, index) {
                             final project = projects[index];
-                            return _buildChatListTile(context, project);
+                            return _buildChatListTile(context, project, isDark);
                           },
                         )
                       : GridView.builder(
@@ -61,7 +74,7 @@ class ConversationsListScreen extends StatelessWidget {
                           itemCount: projects.length,
                           itemBuilder: (context, index) {
                             final project = projects[index];
-                            return _buildChatCard(context, project);
+                            return _buildChatCard(context, project, isDark);
                           },
                         ),
             ),
@@ -71,7 +84,7 @@ class ConversationsListScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildChatListTile(BuildContext context, dynamic project) {
+  Widget _buildChatListTile(BuildContext context, dynamic project, bool isDark) {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       leading: Stack(
@@ -90,7 +103,10 @@ class ConversationsListScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 color: AppColors.statusSuccess,
                 shape: BoxShape.circle,
-                border: Border.all(color: AppColors.surface, width: 2),
+                border: Border.all(
+                  color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                  width: 2,
+                ),
               ),
             ),
           ),
@@ -98,7 +114,11 @@ class ConversationsListScreen extends StatelessWidget {
       ),
       title: Text(
         project.name,
-        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+        style: TextStyle(
+          fontWeight: FontWeight.w600,
+          fontSize: 14,
+          color: isDark ? const Color(0xFFF8FAFC) : const Color(0xFF111827),
+        ),
       ),
       subtitle: Text(
         project.description.isNotEmpty
@@ -106,9 +126,15 @@ class ConversationsListScreen extends StatelessWidget {
             : 'Developer support thread for ${project.name}',
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
-        style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+        style: TextStyle(
+          color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+          fontSize: 12,
+        ),
       ),
-      trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
+      trailing: Icon(
+        Icons.chevron_right_rounded,
+        color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+      ),
       onTap: () {
         Navigator.of(context).push(
           MaterialPageRoute(
@@ -122,7 +148,7 @@ class ConversationsListScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildChatCard(BuildContext context, dynamic project) {
+  Widget _buildChatCard(BuildContext context, dynamic project, bool isDark) {
     return GlassContainer(
       padding: const EdgeInsets.all(14),
       onTap: () {
@@ -153,7 +179,10 @@ class ConversationsListScreen extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: AppColors.statusSuccess,
                     shape: BoxShape.circle,
-                    border: Border.all(color: AppColors.surface, width: 1.5),
+                    border: Border.all(
+                      color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                      width: 1.5,
+                    ),
                   ),
                 ),
               ),
@@ -167,7 +196,11 @@ class ConversationsListScreen extends StatelessWidget {
               children: [
                 Text(
                   project.name,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: isDark ? const Color(0xFFF8FAFC) : const Color(0xFF111827),
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -176,12 +209,19 @@ class ConversationsListScreen extends StatelessWidget {
                   project.description.isNotEmpty ? project.description : 'Developer support thread',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: AppColors.textMuted, fontSize: 11.5),
+                  style: TextStyle(
+                    color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                    fontSize: 11.5,
+                  ),
                 ),
               ],
             ),
           ),
-          const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted, size: 20),
+          Icon(
+            Icons.chevron_right_rounded,
+            color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+            size: 20,
+          ),
         ],
       ),
     );

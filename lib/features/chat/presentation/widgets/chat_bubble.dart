@@ -16,6 +16,7 @@ class ChatBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     final isUser = message.isFromUser;
     final isDeveloper = message.senderType == MessageSenderType.developer;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
@@ -26,7 +27,7 @@ class ChatBubble extends StatelessWidget {
           if (!isUser) ...[
             CircleAvatar(
               radius: 14,
-              backgroundColor: isDeveloper ? AppColors.accentPurple : AppColors.surfaceBorder,
+              backgroundColor: isDeveloper ? AppColors.accentPurple : (isDark ? AppColors.surfaceBorder : const Color(0xFFE2E8F0)),
               child: Text(
                 message.senderName.isNotEmpty ? message.senderName[0].toUpperCase() : 'D',
                 style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white),
@@ -46,13 +47,16 @@ class ChatBubble extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
-                        color: isDeveloper ? AppColors.accentPurple : AppColors.textSecondary,
+                        color: isDeveloper ? AppColors.accentPurple : (isDark ? AppColors.textSecondary : const Color(0xFF64748B)),
                       ),
                     ),
                     const SizedBox(width: 6),
                     Text(
                       DateFormatter.formatChatTime(message.createdAt),
-                      style: const TextStyle(fontSize: 10, color: AppColors.textMuted),
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+                      ),
                     ),
                   ],
                 ),
@@ -60,7 +64,9 @@ class ChatBubble extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   decoration: BoxDecoration(
-                    color: isUser ? AppColors.primary : AppColors.surfaceLight,
+                    color: isUser
+                        ? const Color(0xFFE53935)
+                        : (isDark ? const Color(0xFF1E293B) : Colors.white),
                     borderRadius: BorderRadius.only(
                       topLeft: const Radius.circular(14),
                       topRight: const Radius.circular(14),
@@ -69,10 +75,19 @@ class ChatBubble extends StatelessWidget {
                     ),
                     border: Border.all(
                       color: isUser
-                          ? AppColors.primaryDark
-                          : AppColors.surfaceBorder,
+                          ? const Color(0xFFDC2626)
+                          : (isDark ? const Color(0xFF334155) : const Color(0xFFE5E7EB)),
                       width: 1,
                     ),
+                    boxShadow: isUser || isDark
+                        ? null
+                        : [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.03),
+                              blurRadius: 6,
+                              offset: const Offset(0, 1),
+                            ),
+                          ],
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -81,7 +96,9 @@ class ChatBubble extends StatelessWidget {
                         message.content,
                         style: TextStyle(
                           fontSize: 13,
-                          color: isUser ? Colors.white : AppColors.textPrimary,
+                          color: isUser
+                              ? Colors.white
+                              : (isDark ? const Color(0xFFF8FAFC) : const Color(0xFF111827)),
                           height: 1.35,
                         ),
                       ),

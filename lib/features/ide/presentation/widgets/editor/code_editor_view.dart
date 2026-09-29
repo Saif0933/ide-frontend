@@ -286,43 +286,65 @@ class _CodeEditorViewState extends State<CodeEditorView> {
             },
           ),
 
-          // Editor Status Bar (Line/Col, Save state, Encoding)
+          // Editor Status Bar (Responsive, Line/Col, Save state, Encoding)
           Container(
-            height: 24,
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            color: AppColors.surface,
-            child: Row(
-              children: [
-                _buildSyncIndicator(widget.activeTab.syncState),
-                const SizedBox(width: 8),
-                Text(
-                  widget.activeTab.title,
-                  style: const TextStyle(fontSize: 10.5, color: AppColors.textSecondary),
-                ),
-                const Spacer(),
-                Text(
-                  'Ln $_currentLineNumber, Col $_currentColumnNumber',
-                  style: const TextStyle(
-                    fontFamily: 'monospace',
-                    fontSize: 10.5,
-                    color: AppColors.textMuted,
+            height: 26,
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            decoration: const BoxDecoration(
+              color: Color(0xFF0F172A),
+              border: Border(
+                top: BorderSide(color: Color(0xFF1E293B), width: 1),
+              ),
+            ),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              child: Row(
+                children: [
+                  _buildSyncIndicator(widget.activeTab.syncState),
+                  const SizedBox(width: 8),
+                  Container(width: 1, height: 12, color: const Color(0xFF334155)),
+                  const SizedBox(width: 8),
+                  Text(
+                    widget.activeTab.title,
+                    style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w500, color: Color(0xFF94A3B8)),
                   ),
-                ),
-                const SizedBox(width: 12),
-                const Text(
-                  'UTF-8',
-                  style: TextStyle(fontSize: 10.5, color: AppColors.textMuted),
-                ),
-                const SizedBox(width: 12),
-                const Text(
-                  'Python 3.12',
-                  style: TextStyle(
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.accentCyan,
+                  const SizedBox(width: 12),
+                  Container(width: 1, height: 12, color: const Color(0xFF334155)),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Ln $_currentLineNumber, Col $_currentColumnNumber',
+                    style: const TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: 10,
+                      color: Color(0xFF64748B),
+                    ),
                   ),
-                ),
-              ],
+                  const SizedBox(width: 12),
+                  Container(width: 1, height: 12, color: const Color(0xFF334155)),
+                  const SizedBox(width: 12),
+                  const Text(
+                    'UTF-8',
+                    style: TextStyle(fontSize: 10, color: Color(0xFF64748B)),
+                  ),
+                  const SizedBox(width: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF38BDF8).withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: const Text(
+                      'Python 3.12',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF38BDF8),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -336,23 +358,23 @@ class _CodeEditorViewState extends State<CodeEditorView> {
 
     switch (state) {
       case SyncState.clean:
-        dotColor = AppColors.statusSuccess;
+        dotColor = const Color(0xFF10B981);
         label = 'Saved';
         break;
       case SyncState.dirtyLocal:
-        dotColor = AppColors.statusQueued;
+        dotColor = const Color(0xFFF59E0B);
         label = 'Editing';
         break;
       case SyncState.saving:
-        dotColor = AppColors.statusRunning;
+        dotColor = const Color(0xFF38BDF8);
         label = 'Saving...';
         break;
       case SyncState.conflict:
-        dotColor = AppColors.accentAmber;
+        dotColor = const Color(0xFFF97316);
         label = 'Conflict';
         break;
       case SyncState.saveFailed:
-        dotColor = AppColors.statusFailed;
+        dotColor = const Color(0xFFEF4444);
         label = 'Save Error';
         break;
     }
@@ -366,12 +388,18 @@ class _CodeEditorViewState extends State<CodeEditorView> {
           decoration: BoxDecoration(
             color: dotColor,
             shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: dotColor.withValues(alpha: 0.6),
+                blurRadius: 4,
+              ),
+            ],
           ),
         ),
         const SizedBox(width: 5),
         Text(
           label,
-          style: TextStyle(fontSize: 10.5, color: dotColor, fontWeight: FontWeight.w500),
+          style: TextStyle(fontSize: 10.5, color: dotColor, fontWeight: FontWeight.bold),
         ),
       ],
     );

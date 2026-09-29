@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/core/constants/app_colors.dart';
 
 class EditorQuickKeys extends StatelessWidget {
   final void Function(String text, {int cursorOffset}) onInsertText;
@@ -18,7 +17,7 @@ class EditorQuickKeys extends StatelessWidget {
   });
 
   static const List<Map<String, dynamic>> _keys = [
-    {'label': 'Tab', 'action': 'tab'},
+    {'label': 'Tab', 'action': 'tab', 'isSpecial': true},
     {'label': ':', 'insert': ':'},
     {'label': '(', 'insert': '()', 'offset': 1},
     {'label': ')', 'insert': ')'},
@@ -29,87 +28,122 @@ class EditorQuickKeys extends StatelessWidget {
     {'label': ']', 'insert': ']'},
     {'label': '{', 'insert': '{}', 'offset': 1},
     {'label': '}', 'insert': '}'},
+    {'label': '<', 'insert': '<'},
+    {'label': '>', 'insert': '>'},
+    {'label': '+', 'insert': ' + '},
+    {'label': '-', 'insert': ' - '},
+    {'label': '*', 'insert': ' * '},
+    {'label': '/', 'insert': ' / '},
+    {'label': ',', 'insert': ', '},
+    {'label': ';', 'insert': ';'},
     {'label': '#', 'insert': '# '},
     {'label': '_', 'insert': '_'},
     {'label': '.', 'insert': '.'},
-    {'label': 'def', 'insert': 'def ():\\n    ', 'offset': 4},
-    {'label': 'print', 'insert': 'print()', 'offset': 6},
-    {'label': 'if', 'insert': 'if :\\n    ', 'offset': 3},
-    {'label': 'for', 'insert': 'for  in :\\n    ', 'offset': 4},
-    {'label': 'return', 'insert': 'return '},
+    {'label': 'def', 'insert': 'def ():\\n    ', 'offset': 4, 'isKeyword': true},
+    {'label': 'print', 'insert': 'print()', 'offset': 6, 'isKeyword': true},
+    {'label': 'if', 'insert': 'if :\\n    ', 'offset': 3, 'isKeyword': true},
+    {'label': 'for', 'insert': 'for  in :\\n    ', 'offset': 4, 'isKeyword': true},
+    {'label': 'return', 'insert': 'return ', 'isKeyword': true},
   ];
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 38,
+      height: 40,
       decoration: const BoxDecoration(
-        color: AppColors.surface,
+        color: Color(0xFF0F172A),
         border: Border(
-          top: BorderSide(color: AppColors.surfaceBorder, width: 1),
-          bottom: BorderSide(color: AppColors.surfaceBorder, width: 1),
+          top: BorderSide(color: Color(0xFF1E293B), width: 1),
+          bottom: BorderSide(color: Color(0xFF1E293B), width: 1),
         ),
       ),
       child: Row(
         children: [
-          IconButton(
-            icon: const Icon(Icons.undo_rounded, size: 18, color: AppColors.textSecondary),
+          // Action Buttons: Undo, Redo, Save
+          _buildActionIcon(
+            icon: Icons.undo_rounded,
             tooltip: 'Undo',
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            constraints: const BoxConstraints(minWidth: 36),
-            onPressed: onUndo,
+            onTap: onUndo,
           ),
-          IconButton(
-            icon: const Icon(Icons.redo_rounded, size: 18, color: AppColors.textSecondary),
+          _buildActionIcon(
+            icon: Icons.redo_rounded,
             tooltip: 'Redo',
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            constraints: const BoxConstraints(minWidth: 36),
-            onPressed: onRedo,
+            onTap: onRedo,
           ),
           if (onSave != null)
-            IconButton(
-              icon: const Icon(Icons.save_rounded, size: 18, color: AppColors.statusSuccess),
-              tooltip: 'Save (Ctrl+S)',
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              constraints: const BoxConstraints(minWidth: 36),
-              onPressed: onSave,
+            _buildActionIcon(
+              icon: Icons.save_rounded,
+              color: const Color(0xFF10B981),
+              tooltip: 'Save',
+              onTap: onSave!,
             ),
-          Container(width: 1, height: 20, color: AppColors.surfaceBorder),
+
+          // Vertical divider
+          Container(
+            width: 1,
+            height: 22,
+            margin: const EdgeInsets.symmetric(horizontal: 2),
+            color: const Color(0xFF334155),
+          ),
+
+          // Horizontal scrollable keyboard symbols
           Expanded(
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 6),
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
               itemCount: _keys.length,
               itemBuilder: (context, index) {
                 final item = _keys[index];
+                final isSpecial = item['isSpecial'] == true;
+                final isKeyword = item['isKeyword'] == true;
+
                 return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 4),
-                  child: InkWell(
-                    onTap: () {
-                      if (item['action'] == 'tab') {
-                        onTab();
-                      } else {
-                        final insert = item['insert'] as String;
-                        final offset = item['offset'] as int? ?? insert.length;
-                        onInsertText(insert, cursorOffset: offset);
-                      }
-                    },
-                    borderRadius: BorderRadius.circular(6),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceLight,
-                        borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: AppColors.surfaceBorder, width: 0.8),
-                      ),
-                      child: Text(
-                        item['label'] as String,
-                        style: const TextStyle(
-                          fontFamily: 'monospace',
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
+                  padding: const EdgeInsets.symmetric(horizontal: 2.5),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () {
+                        if (item['action'] == 'tab') {
+                          onTab();
+                        } else {
+                          final insert = item['insert'] as String;
+                          final offset = item['offset'] as int? ?? insert.length;
+                          onInsertText(insert, cursorOffset: offset);
+                        }
+                      },
+                      borderRadius: BorderRadius.circular(6),
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: isKeyword || isSpecial ? 10 : 8,
+                        ),
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: isKeyword
+                              ? const Color(0xFFE53935).withValues(alpha: 0.15)
+                              : (isSpecial
+                                  ? const Color(0xFF38BDF8).withValues(alpha: 0.15)
+                                  : const Color(0xFF1E293B)),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(
+                            color: isKeyword
+                                ? const Color(0xFFE53935).withValues(alpha: 0.4)
+                                : (isSpecial
+                                    ? const Color(0xFF38BDF8).withValues(alpha: 0.4)
+                                    : const Color(0xFF334155)),
+                            width: 0.8,
+                          ),
+                        ),
+                        child: Text(
+                          item['label'] as String,
+                          style: TextStyle(
+                            fontFamily: 'monospace',
+                            fontSize: isKeyword ? 11 : 12.5,
+                            fontWeight: isKeyword || isSpecial ? FontWeight.bold : FontWeight.w600,
+                            color: isKeyword
+                                ? const Color(0xFFF87171)
+                                : (isSpecial ? const Color(0xFF38BDF8) : Colors.white),
+                          ),
                         ),
                       ),
                     ),
@@ -119,6 +153,27 @@ class EditorQuickKeys extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildActionIcon({
+    required IconData icon,
+    required String tooltip,
+    required VoidCallback onTap,
+    Color color = const Color(0xFF94A3B8),
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(6),
+        child: Container(
+          width: 34,
+          height: 34,
+          alignment: Alignment.center,
+          child: Icon(icon, size: 17, color: color),
+        ),
       ),
     );
   }

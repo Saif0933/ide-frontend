@@ -74,16 +74,21 @@ class _DeveloperChatScreenState extends State<DeveloperChatScreen> {
   @override
   Widget build(BuildContext context) {
     final isDesktopOrTablet = !Responsive.isMobile(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return AnimatedBuilder(
       animation: _chatController,
       builder: (context, _) {
         return Scaffold(
-          backgroundColor: AppColors.background,
+          backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
           appBar: AppBar(
-            backgroundColor: AppColors.surface,
+            backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+              icon: Icon(
+                Icons.arrow_back_ios_new_rounded,
+                size: 18,
+                color: isDark ? Colors.white : const Color(0xFF111827),
+              ),
               onPressed: () => Navigator.of(context).pop(),
             ),
             title: Row(
@@ -104,7 +109,10 @@ class _DeveloperChatScreenState extends State<DeveloperChatScreen> {
                         decoration: BoxDecoration(
                           color: AppColors.statusSuccess,
                           shape: BoxShape.circle,
-                          border: Border.all(color: AppColors.surface, width: 1.5),
+                          border: Border.all(
+                            color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                            width: 1.5,
+                          ),
                         ),
                       ),
                     ),
@@ -114,13 +122,20 @@ class _DeveloperChatScreenState extends State<DeveloperChatScreen> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Marcus Vance (Staff Eng)',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? const Color(0xFFF8FAFC) : const Color(0xFF111827),
+                      ),
                     ),
                     Text(
                       'Project: ${widget.projectName}',
-                      style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                      ),
                     ),
                   ],
                 ),
@@ -143,17 +158,28 @@ class _DeveloperChatScreenState extends State<DeveloperChatScreen> {
                                   child: Column(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Icon(Icons.forum_outlined, size: 48, color: AppColors.textMuted.withValues(alpha: 0.5)),
+                                      Icon(
+                                        Icons.forum_outlined,
+                                        size: 48,
+                                        color: (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)).withValues(alpha: 0.5),
+                                      ),
                                       const SizedBox(height: 12),
-                                      const Text(
+                                      Text(
                                         'Start Developer Conversation',
-                                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w600,
+                                          color: isDark ? const Color(0xFFF8FAFC) : const Color(0xFF111827),
+                                        ),
                                       ),
                                       const SizedBox(height: 6),
-                                      const Text(
+                                      Text(
                                         'Ask questions about your code, attach error logs, or discuss architectural decisions.',
                                         textAlign: TextAlign.center,
-                                        style: TextStyle(fontSize: 12, color: AppColors.textMuted),
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -175,7 +201,7 @@ class _DeveloperChatScreenState extends State<DeveloperChatScreen> {
                   if (_chatController.pendingContext != null)
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                      color: AppColors.surface,
+                      color: isDark ? const Color(0xFF1E293B) : Colors.white,
                       child: Row(
                         children: [
                           Expanded(
@@ -184,7 +210,11 @@ class _DeveloperChatScreenState extends State<DeveloperChatScreen> {
                             ),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.close, size: 16, color: AppColors.textMuted),
+                            icon: Icon(
+                              Icons.close,
+                              size: 16,
+                              color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                            ),
                             onPressed: _chatController.clearPendingContext,
                           ),
                         ],
@@ -194,10 +224,13 @@ class _DeveloperChatScreenState extends State<DeveloperChatScreen> {
                   // Chat Input Bar
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    decoration: const BoxDecoration(
-                      color: AppColors.surface,
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF1E293B) : Colors.white,
                       border: Border(
-                        top: BorderSide(color: AppColors.surfaceBorder, width: 1),
+                        top: BorderSide(
+                          color: isDark ? const Color(0xFF334155) : const Color(0xFFE5E7EB),
+                          width: 1,
+                        ),
                       ),
                     ),
                     child: SafeArea(
@@ -218,12 +251,19 @@ class _DeveloperChatScreenState extends State<DeveloperChatScreen> {
                           Expanded(
                             child: TextField(
                               controller: _textController,
-                              style: const TextStyle(fontSize: 13.5, color: AppColors.textPrimary),
+                              cursorColor: const Color(0xFFE53935),
+                              style: TextStyle(
+                                fontSize: 13.5,
+                                color: isDark ? Colors.white : const Color(0xFF111827),
+                              ),
                               decoration: InputDecoration(
                                 hintText: 'Message mentor about code...',
-                                hintStyle: const TextStyle(fontSize: 13, color: AppColors.textMuted),
+                                hintStyle: TextStyle(
+                                  fontSize: 13,
+                                  color: isDark ? const Color(0xFF64748B) : const Color(0xFF9CA3AF),
+                                ),
                                 filled: true,
-                                fillColor: AppColors.surfaceLight,
+                                fillColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
                                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(20),
@@ -236,7 +276,7 @@ class _DeveloperChatScreenState extends State<DeveloperChatScreen> {
                           const SizedBox(width: 8),
                           CircleAvatar(
                             radius: 20,
-                            backgroundColor: AppColors.primary,
+                            backgroundColor: const Color(0xFFE53935),
                             child: IconButton(
                               icon: _chatController.isSending
                                   ? const SizedBox(

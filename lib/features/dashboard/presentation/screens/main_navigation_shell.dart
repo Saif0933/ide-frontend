@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/core/constants/app_colors.dart';
 import 'package:frontend/core/constants/app_strings.dart';
 import 'package:frontend/core/utils/responsive.dart';
 import 'package:frontend/features/auth/controllers/auth_controller.dart';
@@ -13,10 +12,7 @@ import 'package:frontend/features/profile/presentation/screens/profile_screen.da
 class MainNavigationShell extends StatefulWidget {
   final AuthController authController;
 
-  const MainNavigationShell({
-    super.key,
-    required this.authController,
-  });
+  const MainNavigationShell({super.key, required this.authController});
 
   @override
   State<MainNavigationShell> createState() => _MainNavigationShellState();
@@ -45,6 +41,7 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
   Widget build(BuildContext context) {
     final isDesktopOrTablet = !Responsive.isMobile(context);
     final isDesktop = Responsive.isDesktop(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final List<Widget> screens = [
       DashboardScreen(
@@ -61,31 +58,49 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
 
     if (isDesktopOrTablet) {
       return Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: isDark
+            ? const Color(0xFF0F172A)
+            : const Color(0xFFF8FAFC),
         body: Row(
           children: [
             Container(
-              decoration: const BoxDecoration(
-                color: AppColors.surface,
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF1E293B) : Colors.white,
                 border: Border(
-                  right: BorderSide(color: AppColors.surfaceBorder, width: 1),
+                  right: BorderSide(
+                    color: isDark
+                        ? const Color(0xFF334155)
+                        : const Color(0xFFE5E7EB),
+                    width: 1,
+                  ),
                 ),
               ),
               child: NavigationRail(
                 selectedIndex: _currentIndex,
-                onDestinationSelected: (index) => setState(() => _currentIndex = index),
-                backgroundColor: AppColors.surface,
+                onDestinationSelected: (index) =>
+                    setState(() => _currentIndex = index),
+                backgroundColor: isDark
+                    ? const Color(0xFF1E293B)
+                    : Colors.white,
                 extended: isDesktop,
                 minExtendedWidth: 200,
-                selectedIconTheme: const IconThemeData(color: AppColors.primaryLight),
-                unselectedIconTheme: const IconThemeData(color: AppColors.textMuted),
+                selectedIconTheme: const IconThemeData(
+                  color: Color(0xFFE53935),
+                ),
+                unselectedIconTheme: IconThemeData(
+                  color: isDark
+                      ? const Color(0xFF94A3B8)
+                      : const Color(0xFF6B7280),
+                ),
                 selectedLabelTextStyle: const TextStyle(
-                  color: AppColors.primaryLight,
+                  color: Color(0xFFE53935),
                   fontWeight: FontWeight.bold,
                   fontSize: 13,
                 ),
-                unselectedLabelTextStyle: const TextStyle(
-                  color: AppColors.textMuted,
+                unselectedLabelTextStyle: TextStyle(
+                  color: isDark
+                      ? const Color(0xFF94A3B8)
+                      : const Color(0xFF6B7280),
                   fontSize: 13,
                 ),
                 leading: Padding(
@@ -97,19 +112,39 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
                         width: 36,
                         height: 36,
                         decoration: BoxDecoration(
-                          gradient: AppColors.primaryGradient,
+                          color: const Color(0xFFE53935),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: const Icon(Icons.terminal_rounded, size: 20, color: Colors.white),
+                        child: const Icon(
+                          Icons.newspaper_rounded,
+                          size: 20,
+                          color: Colors.white,
+                        ),
                       ),
                       if (isDesktop) ...[
                         const SizedBox(width: 10),
-                        const Text(
-                          'PyStudio IDE',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textPrimary,
+                        RichText(
+                          text: TextSpan(
+                            children: [
+                              TextSpan(
+                                text: 'News',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w900,
+                                  color: isDark
+                                      ? Colors.white
+                                      : const Color(0xFF111827),
+                                ),
+                              ),
+                              const TextSpan(
+                                text: 'Hub',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w900,
+                                  color: Color(0xFFE53935),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
@@ -141,10 +176,7 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
               ),
             ),
             Expanded(
-              child: IndexedStack(
-                index: _currentIndex,
-                children: screens,
-              ),
+              child: IndexedStack(index: _currentIndex, children: screens),
             ),
           ],
         ),
@@ -152,22 +184,25 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
     }
 
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: screens,
-      ),
+      body: IndexedStack(index: _currentIndex, children: screens),
       bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1E293B) : Colors.white,
           border: Border(
-            top: BorderSide(color: AppColors.surfaceBorder, width: 1),
+            top: BorderSide(
+              color: isDark ? const Color(0xFF334155) : const Color(0xFFE5E7EB),
+              width: 1,
+            ),
           ),
         ),
         child: BottomNavigationBar(
           currentIndex: _currentIndex,
           onTap: (index) => setState(() => _currentIndex = index),
-          selectedItemColor: AppColors.primaryLight,
-          unselectedItemColor: AppColors.textMuted,
-          backgroundColor: AppColors.surface,
+          selectedItemColor: const Color(0xFFE53935),
+          unselectedItemColor: isDark
+              ? const Color(0xFF94A3B8)
+              : const Color(0xFF6B7280),
+          backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
           type: BottomNavigationBarType.fixed,
           selectedFontSize: 11,
           unselectedFontSize: 11,

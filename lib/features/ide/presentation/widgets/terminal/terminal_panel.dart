@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:frontend/core/constants/app_colors.dart';
 import 'package:frontend/core/theme/app_theme.dart';
 import 'package:frontend/features/execution/models/execution_log.dart';
 import 'package:frontend/features/execution/models/execution_job.dart';
@@ -50,9 +49,18 @@ class _TerminalPanelState extends State<TerminalPanel> {
     final text = widget.ideController.terminalLogs.map((l) => l.content).join('\n');
     Clipboard.setData(ClipboardData(text: text));
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Terminal output copied to clipboard'),
-        duration: Duration(seconds: 2),
+      SnackBar(
+        content: const Row(
+          children: [
+            Icon(Icons.check_circle_rounded, color: Colors.greenAccent, size: 16),
+            SizedBox(width: 8),
+            Text('Terminal output copied to clipboard', style: TextStyle(fontWeight: FontWeight.w600)),
+          ],
+        ),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: const Color(0xFF1E293B),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        duration: const Duration(seconds: 2),
       ),
     );
   }
@@ -60,90 +68,127 @@ class _TerminalPanelState extends State<TerminalPanel> {
   @override
   Widget build(BuildContext context) {
     final exec = widget.ideController.currentExecution;
-    final hasErrors = widget.ideController.terminalLogs
-        .any((l) => l.stream == LogStreamType.stderr);
+    final hasErrors = widget.ideController.terminalLogs.any((l) => l.stream == LogStreamType.stderr);
 
     return Container(
       decoration: const BoxDecoration(
-        color: AppColors.terminalBackground,
+        color: Color(0xFF090D16),
         border: Border(
-          top: BorderSide(color: AppColors.surfaceBorder, width: 1.5),
+          top: BorderSide(color: Color(0xFF1E293B), width: 1.5),
         ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Terminal Toolbar Header
+          // Responsive Terminal Toolbar Header (No Overflow Guaranteed)
           Container(
             height: 38,
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            color: AppColors.surface,
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            decoration: const BoxDecoration(
+              color: Color(0xFF0F172A),
+              border: Border(
+                bottom: BorderSide(color: Color(0xFF1E293B), width: 1),
+              ),
+            ),
             child: Row(
               children: [
-                const Icon(Icons.terminal_rounded, size: 16, color: AppColors.accentCyan),
-                const SizedBox(width: 8),
+                // Left: Title & Status
+                Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF38BDF8).withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: const Icon(Icons.terminal_rounded, size: 14, color: Color(0xFF38BDF8)),
+                ),
+                const SizedBox(width: 6),
                 const Text(
                   'TERMINAL',
                   style: TextStyle(
                     fontSize: 11,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w800,
                     letterSpacing: 0.8,
-                    color: AppColors.textPrimary,
+                    color: Colors.white,
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 6),
                 if (widget.ideController.isExecuting)
-                  const StatusPill(status: ExecutionStatus.running, fontSize: 10)
+                  const StatusPill(status: ExecutionStatus.running, fontSize: 9.5)
                 else if (exec != null)
-                  StatusPill(status: exec.status, fontSize: 10),
+                  StatusPill(status: exec.status, fontSize: 9.5),
 
-                const Spacer(),
+                // Right Actions inside SingleChildScrollView to prevent any overflow on small devices
+                Expanded(
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      reverse: true,
+                      physics: const BouncingScrollPhysics(),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Ask Developer CTA (Gradient Pill for AI Debugging)
+                          if (hasErrors || exec?.hasFailed == true)
+                            Padding(
+                              padding: const EdgeInsets.only(right: 6),
+                              child: InkWell(
+                                onTap: widget.onAskDeveloper,
+                                borderRadius: BorderRadius.circular(8),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: [Color(0xFF8B5CF6), Color(0xFF6366F1)],
+                                    ),
+                                    borderRadius: BorderRadius.circular(8),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: const Color(0xFF8B5CF6).withValues(alpha: 0.35),
+                                        blurRadius: 6,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.auto_awesome_rounded, size: 12, color: Colors.white),
+                                      SizedBox(width: 4),
+                                      Text(
+                                        'Ask Developer',
+                                        style: TextStyle(
+                                          fontSize: 10.5,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
 
-                // Ask Developer CTA (High Priority Button when error occurs)
-                if (hasErrors || exec?.hasFailed == true)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 6),
-                    child: ElevatedButton.icon(
-                      onPressed: widget.onAskDeveloper,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.accentPurple.withValues(alpha: 0.2),
-                        foregroundColor: AppColors.accentPurple,
-                        elevation: 0,
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        minimumSize: const Size(0, 26),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(6),
-                          side: const BorderSide(color: AppColors.accentPurple, width: 0.8),
-                        ),
-                      ),
-                      icon: const Icon(Icons.contact_support_rounded, size: 13),
-                      label: const Text(
-                        'Ask Developer',
-                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                          // Quick Action Buttons
+                          _buildHeaderIconBtn(
+                            icon: Icons.copy_rounded,
+                            tooltip: 'Copy Logs',
+                            onTap: _copyTerminalLogs,
+                          ),
+                          _buildHeaderIconBtn(
+                            icon: Icons.block_rounded,
+                            tooltip: 'Clear Output',
+                            onTap: widget.ideController.clearTerminal,
+                          ),
+                          _buildHeaderIconBtn(
+                            icon: Icons.keyboard_arrow_down_rounded,
+                            tooltip: 'Minimize Terminal',
+                            onTap: widget.ideController.toggleTerminal,
+                          ),
+                        ],
                       ),
                     ),
                   ),
-
-                IconButton(
-                  icon: const Icon(Icons.copy_rounded, size: 15, color: AppColors.textSecondary),
-                  tooltip: 'Copy Output',
-                  constraints: const BoxConstraints(minWidth: 28),
-                  padding: EdgeInsets.zero,
-                  onPressed: _copyTerminalLogs,
-                ),
-                IconButton(
-                  icon: const Icon(Icons.block_rounded, size: 15, color: AppColors.textSecondary),
-                  tooltip: 'Clear Output',
-                  constraints: const BoxConstraints(minWidth: 28),
-                  padding: EdgeInsets.zero,
-                  onPressed: widget.ideController.clearTerminal,
-                ),
-                IconButton(
-                  icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 18, color: AppColors.textSecondary),
-                  tooltip: 'Minimize',
-                  constraints: const BoxConstraints(minWidth: 28),
-                  padding: EdgeInsets.zero,
-                  onPressed: widget.ideController.toggleTerminal,
                 ),
               ],
             ),
@@ -152,60 +197,102 @@ class _TerminalPanelState extends State<TerminalPanel> {
           // Execution Metadata Bar
           if (exec != null && !widget.ideController.isExecuting)
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              color: AppColors.surfaceLight.withValues(alpha: 0.5),
-              child: Row(
-                children: [
-                  Text(
-                    'Exit Code: ${exec.exitCode ?? 0}',
-                    style: TextStyle(
-                      fontFamily: 'monospace',
-                      fontSize: 10.5,
-                      fontWeight: FontWeight.w600,
-                      color: exec.exitCode == 0 ? AppColors.statusSuccess : AppColors.statusFailed,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  if (exec.durationMs != null)
-                    Text(
-                      'Duration: ${exec.durationMs}ms',
-                      style: const TextStyle(
-                        fontFamily: 'monospace',
-                        fontSize: 10.5,
-                        color: AppColors.textMuted,
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              color: const Color(0xFF0F172A).withValues(alpha: 0.6),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: exec.exitCode == 0
+                            ? const Color(0xFF10B981).withValues(alpha: 0.15)
+                            : const Color(0xFFEF4444).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        'Exit Code: ${exec.exitCode ?? 0}',
+                        style: TextStyle(
+                          fontFamily: 'monospace',
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: exec.exitCode == 0 ? const Color(0xFF34D399) : const Color(0xFFF87171),
+                        ),
                       ),
                     ),
-                  const SizedBox(width: 12),
-                  if (exec.memoryUsage != null)
-                    Text(
-                      'Mem: ${exec.memoryUsage}',
-                      style: const TextStyle(
-                        fontFamily: 'monospace',
-                        fontSize: 10.5,
-                        color: AppColors.textMuted,
+                    const SizedBox(width: 8),
+                    if (exec.durationMs != null)
+                      Text(
+                        '⏱ ${exec.durationMs}ms',
+                        style: const TextStyle(
+                          fontFamily: 'monospace',
+                          fontSize: 10,
+                          color: Color(0xFF94A3B8),
+                        ),
                       ),
-                    ),
-                ],
+                    const SizedBox(width: 8),
+                    if (exec.memoryUsage != null)
+                      Text(
+                        '⚡ ${exec.memoryUsage}',
+                        style: const TextStyle(
+                          fontFamily: 'monospace',
+                          fontSize: 10,
+                          color: Color(0xFF94A3B8),
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
 
           // Terminal Log Output
           Expanded(
             child: widget.ideController.terminalLogs.isEmpty
-                ? const Padding(
-                    padding: EdgeInsets.all(12),
-                    child: Text(
-                      'Python 3.12.2 Sandbox ready.\nPress "Run" to execute your script.',
-                      style: TextStyle(
-                        fontFamily: 'monospace',
-                        fontSize: 12,
-                        color: AppColors.textMuted,
-                      ),
+                ? Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              width: 6,
+                              height: 6,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF10B981),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            const Text(
+                              'Python 3.12.2 Sandbox ready.',
+                              style: TextStyle(
+                                fontFamily: 'monospace',
+                                fontSize: 11.5,
+                                color: Color(0xFF38BDF8),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        const Text(
+                          'Tap "Run" in top bar to execute script.',
+                          style: TextStyle(
+                            fontFamily: 'monospace',
+                            fontSize: 11,
+                            color: Color(0xFF64748B),
+                          ),
+                        ),
+                      ],
                     ),
                   )
                 : ListView.builder(
                     controller: _scrollController,
-                    padding: const EdgeInsets.all(10),
+                    padding: const EdgeInsets.all(8),
+                    physics: const BouncingScrollPhysics(),
                     itemCount: widget.ideController.terminalLogs.length,
                     itemBuilder: (context, index) {
                       final log = widget.ideController.terminalLogs[index];
@@ -218,26 +305,41 @@ class _TerminalPanelState extends State<TerminalPanel> {
     );
   }
 
+  Widget _buildHeaderIconBtn({
+    required IconData icon,
+    required String tooltip,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(6),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 4),
+        child: Icon(icon, size: 15, color: const Color(0xFF94A3B8)),
+      ),
+    );
+  }
+
   Widget _buildLogLine(ExecutionLog log) {
-    Color textColor = AppColors.terminalStdout;
+    Color textColor = const Color(0xFFE2E8F0);
     FontWeight weight = FontWeight.w400;
 
     if (log.stream == LogStreamType.stderr) {
-      textColor = AppColors.terminalStderr;
+      textColor = const Color(0xFFF87171);
       weight = FontWeight.w500;
     } else if (log.stream == LogStreamType.system) {
-      textColor = AppColors.accentCyan;
+      textColor = const Color(0xFF38BDF8);
     }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
+      padding: const EdgeInsets.symmetric(vertical: 1.5),
       child: SelectableText(
         log.content,
         style: AppTheme.codeStyle(
-          fontSize: 12,
+          fontSize: 11.5,
           color: textColor,
           fontWeight: weight,
-          height: 1.4,
+          height: 1.35,
         ),
       ),
     );

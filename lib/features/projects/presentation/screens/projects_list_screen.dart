@@ -42,6 +42,8 @@ class ProjectsListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return AnimatedBuilder(
       animation: projectController,
       builder: (context, _) {
@@ -50,9 +52,16 @@ class ProjectsListScreen extends StatelessWidget {
         final isDesktop = Responsive.isDesktop(context);
 
         return Scaffold(
-          backgroundColor: AppColors.background,
+          backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
           appBar: AppBar(
-            title: const Text('All Projects'),
+            backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+            title: Text(
+              'All Projects',
+              style: TextStyle(
+                color: isDark ? Colors.white : const Color(0xFF111827),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             actions: [
               IconButton(
                 icon: const Icon(Icons.drive_folder_upload_rounded, color: AppColors.accentAmber),
@@ -77,24 +86,39 @@ class ProjectsListScreen extends StatelessWidget {
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
                     child: TextField(
                       onChanged: (val) => projectController.setSearchQuery(val),
-                      style: const TextStyle(fontSize: 13.5, color: AppColors.textPrimary),
+                      cursorColor: const Color(0xFFE53935),
+                      style: TextStyle(
+                        fontSize: 13.5,
+                        color: isDark ? Colors.white : const Color(0xFF111827),
+                      ),
                       decoration: InputDecoration(
                         hintText: 'Search Python projects...',
-                        prefixIcon: const Icon(Icons.search_rounded, size: 20, color: AppColors.textMuted),
+                        hintStyle: TextStyle(
+                          color: isDark ? const Color(0xFF64748B) : const Color(0xFF9CA3AF),
+                        ),
+                        prefixIcon: Icon(
+                          Icons.search_rounded,
+                          size: 20,
+                          color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF9CA3AF),
+                        ),
                         filled: true,
-                        fillColor: AppColors.surface,
+                        fillColor: isDark ? const Color(0xFF1E293B) : Colors.white,
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
-                          borderSide: const BorderSide(color: AppColors.surfaceBorder),
+                          borderSide: BorderSide(
+                            color: isDark ? const Color(0xFF334155) : const Color(0xFFE5E7EB),
+                          ),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
-                          borderSide: const BorderSide(color: AppColors.surfaceBorder),
+                          borderSide: BorderSide(
+                            color: isDark ? const Color(0xFF334155) : const Color(0xFFE5E7EB),
+                          ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
-                          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                          borderSide: const BorderSide(color: Color(0xFFE53935), width: 1.5),
                         ),
                       ),
                     ),
@@ -109,9 +133,20 @@ class ProjectsListScreen extends StatelessWidget {
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    const Icon(Icons.folder_open_rounded, size: 48, color: AppColors.textMuted),
+                                    Icon(
+                                      Icons.folder_open_rounded,
+                                      size: 48,
+                                      color: isDark ? const Color(0xFF64748B) : Colors.grey.shade400,
+                                    ),
                                     const SizedBox(height: 12),
-                                    const Text('No projects found', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                                    Text(
+                                      'No projects found',
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w600,
+                                        color: isDark ? const Color(0xFFE2E8F0) : const Color(0xFF1F2937),
+                                      ),
+                                    ),
                                     const SizedBox(height: 14),
                                     Wrap(
                                       spacing: 10,
@@ -141,7 +176,7 @@ class ProjectsListScreen extends StatelessWidget {
                                     itemCount: projects.length,
                                     itemBuilder: (context, index) {
                                       final project = projects[index];
-                                      return _buildProjectTile(context, project);
+                                      return _buildProjectTile(context, project, isDark);
                                     },
                                   )
                                 : GridView.builder(
@@ -155,7 +190,7 @@ class ProjectsListScreen extends StatelessWidget {
                                     itemCount: projects.length,
                                     itemBuilder: (context, index) {
                                       final project = projects[index];
-                                      return _buildProjectCard(context, project);
+                                      return _buildProjectCard(context, project, isDark);
                                     },
                                   ),
                   ),
@@ -165,10 +200,10 @@ class ProjectsListScreen extends StatelessWidget {
           ),
           floatingActionButton: isMobile
               ? FloatingActionButton.extended(
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: const Color(0xFFE53935),
                   foregroundColor: Colors.white,
                   icon: const Icon(Icons.file_open_rounded),
-                  label: const Text('Open File from Device', style: TextStyle(fontWeight: FontWeight.bold)),
+                  label: const Text('Open File', style: TextStyle(fontWeight: FontWeight.bold)),
                   onPressed: () => _handleCreateFromFile(context),
                 )
               : null,
@@ -177,7 +212,7 @@ class ProjectsListScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProjectTile(BuildContext context, ProjectModel project) {
+  Widget _buildProjectTile(BuildContext context, ProjectModel project, bool isDark) {
     return GlassContainer(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
@@ -208,13 +243,17 @@ class ProjectsListScreen extends StatelessWidget {
                   children: [
                     Text(
                       project.name,
-                      style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                      style: TextStyle(
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? const Color(0xFFF8FAFC) : const Color(0xFF111827),
+                      ),
                     ),
                     const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
-                        color: AppColors.surfaceLight,
+                        color: isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: const Text(
@@ -229,23 +268,40 @@ class ProjectsListScreen extends StatelessWidget {
                   project.description.isNotEmpty ? project.description : 'Clean Python environment',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                  ),
                 ),
                 const SizedBox(height: 6),
                 Row(
                   children: [
-                    const Icon(Icons.schedule_rounded, size: 12, color: AppColors.textMuted),
+                    Icon(
+                      Icons.schedule_rounded,
+                      size: 12,
+                      color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       'Edited ${DateFormatter.timeAgo(project.updatedAt)}',
-                      style: const TextStyle(fontSize: 10.5, color: AppColors.textMuted),
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+                      ),
                     ),
                     const SizedBox(width: 12),
-                    const Icon(Icons.insert_drive_file_outlined, size: 12, color: AppColors.textMuted),
+                    Icon(
+                      Icons.insert_drive_file_outlined,
+                      size: 12,
+                      color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       '${project.fileCount} files',
-                      style: const TextStyle(fontSize: 10.5, color: AppColors.textMuted),
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+                      ),
                     ),
                   ],
                 ),
@@ -253,7 +309,11 @@ class ProjectsListScreen extends StatelessWidget {
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.delete_outline_rounded, size: 18, color: AppColors.textMuted),
+            icon: Icon(
+              Icons.delete_outline_rounded,
+              size: 18,
+              color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+            ),
             onPressed: () {
               projectController.deleteProject(project.id);
             },
@@ -263,7 +323,7 @@ class ProjectsListScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProjectCard(BuildContext context, ProjectModel project) {
+  Widget _buildProjectCard(BuildContext context, ProjectModel project, bool isDark) {
     return GlassContainer(
       padding: const EdgeInsets.all(16),
       onTap: () {
@@ -294,19 +354,30 @@ class ProjectsListScreen extends StatelessWidget {
                   children: [
                     Text(
                       project.name,
-                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? const Color(0xFFF8FAFC) : const Color(0xFF111827),
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                     Text(
                       '${project.defaultFile} • ${project.fileCount} files',
-                      style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                      ),
                     ),
                   ],
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.delete_outline_rounded, size: 18, color: AppColors.textMuted),
+                icon: Icon(
+                  Icons.delete_outline_rounded,
+                  size: 18,
+                  color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+                ),
                 onPressed: () => projectController.deleteProject(project.id),
               ),
             ],
@@ -316,24 +387,33 @@ class ProjectsListScreen extends StatelessWidget {
             project.description.isNotEmpty ? project.description : 'Clean Python development environment',
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+            style: TextStyle(
+              fontSize: 12,
+              color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+            ),
           ),
           const Spacer(),
-          const Divider(height: 12),
+          Divider(
+            height: 12,
+            color: isDark ? const Color(0xFF334155) : const Color(0xFFE5E7EB),
+          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 'Edited ${DateFormatter.timeAgo(project.updatedAt)}',
-                style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+                style: TextStyle(
+                  fontSize: 11,
+                  color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+                ),
               ),
               const Row(
                 children: [
                   Text(
                     'Open IDE',
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.primaryLight),
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFFE53935)),
                   ),
-                  Icon(Icons.chevron_right_rounded, size: 16, color: AppColors.primaryLight),
+                  Icon(Icons.chevron_right_rounded, size: 16, color: Color(0xFFE53935)),
                 ],
               ),
             ],
