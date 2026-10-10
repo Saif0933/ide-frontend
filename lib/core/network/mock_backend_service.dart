@@ -9,6 +9,7 @@ import 'package:frontend/features/execution/models/execution_log.dart';
 import 'package:frontend/features/execution/models/run_config.dart';
 import 'package:frontend/features/chat/models/chat_message.dart';
 import 'package:frontend/features/chat/models/message_context.dart';
+import 'package:frontend/features/chat/services/chat_api_service.dart';
 import 'package:frontend/features/notifications/models/notification_model.dart';
 import 'package:frontend/features/ide/services/file_import_service.dart';
 import 'websocket_client.dart';
@@ -28,6 +29,7 @@ class MockBackendService {
   final List<NotificationModel> _notifications = [];
 
   UserModel? get currentUser => _currentUser;
+  void setCurrentUser(UserModel? user) => _currentUser = user;
   List<ProjectModel> get projects => List.unmodifiable(_projects);
   List<ExecutionJob> get executions => List.unmodifiable(_executions);
   List<NotificationModel> get notifications => List.unmodifiable(_notifications);
@@ -246,45 +248,8 @@ if __name__ == "__main__":
       ),
     ];
 
-    // Seed Conversations
-    _conversations['proj_001'] = [
-      ChatMessage(
-        id: 'msg_001',
-        conversationId: 'proj_001',
-        projectId: 'proj_001',
-        senderId: 'usr_mentor',
-        senderName: 'Elena Rostova (Mentor)',
-        senderType: MessageSenderType.developer,
-        content: 'Hi Alex! I reviewed your `calculate_metrics` implementation in `utils.py`. The edge cases for empty lists look clean. Let me know if you need help adding standard deviation formulas!',
-        createdAt: now.subtract(const Duration(hours: 2)),
-        status: MessageDeliveryStatus.read,
-      ),
-      ChatMessage(
-        id: 'msg_002',
-        conversationId: 'proj_001',
-        projectId: 'proj_001',
-        senderId: 'usr_001',
-        senderName: 'Alex Rivera',
-        senderType: MessageSenderType.user,
-        content: 'Thanks Elena! I will add variance and standard deviation next. Cloud execution runs super fast!',
-        createdAt: now.subtract(const Duration(hours: 1, minutes: 45)),
-        status: MessageDeliveryStatus.read,
-      ),
-    ];
-
-    _conversations['proj_002'] = [
-      ChatMessage(
-        id: 'msg_201',
-        conversationId: 'proj_002',
-        projectId: 'proj_002',
-        senderId: 'usr_mentor',
-        senderName: 'Marcus Vance (Staff Eng)',
-        senderType: MessageSenderType.developer,
-        content: 'Welcome to your Algorithm Sandbox project! If you encounter any traceback errors during execution, tap the "Ask Developer" button in the terminal to share the traceback context.',
-        createdAt: now.subtract(const Duration(days: 1)),
-        status: MessageDeliveryStatus.read,
-      ),
-    ];
+    // Seed Conversations (Empty - loaded from live API)
+    _conversations.clear();
 
     // Seed Notifications
     _notifications.addAll([
@@ -829,9 +794,15 @@ SyntaxError: invalid syntax''';
     }
   }
 
-  // Chat APIs
+  // Chat APIs (Connected to live backend)
   Future<List<ChatMessage>> getConversation(String projectId) async {
-    await Future.delayed(const Duration(milliseconds: 200));
+    try {
+      final messages = await ChatApiService().getConversation(projectId);
+      if (messages.isNotEmpty) {
+        _conversations[projectId] = messages;
+        return messages;
+      }
+    } catch (_) {}
     return List.from(_conversations[projectId] ?? []);
   }
 
@@ -840,74 +811,44 @@ SyntaxError: invalid syntax''';
     required String content,
     MessageContext? context,
   }) async {
-    final msgId = 'msg_${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
-    final userMsg = ChatMessage(
-      id: msgId,
-      conversationId: projectId,
-      projectId: projectId,
-      senderId: _currentUser?.id ?? 'usr_001',
-      senderName: _currentUser?.name ?? 'Alex Rivera',
-      senderType: MessageSenderType.user,
-      content: content,
-      createdAt: DateTime.now(),
-      status: MessageDeliveryStatus.delivered,
-      contextAttachment: context,
-    );
+    try {
+      final response = await ChatApiService().sendMessage(
+        projectId: projectId,
+        content: content,
+        context: context,
+      );
 
-    final list = _conversations[projectId] ?? [];
-    list.add(userMsg);
-    _conversations[projectId] = list;
-
-    // Trigger realistic developer mentor reply
-    _scheduleDeveloperReply(projectId, content, context);
-
-    return userMsg;
-  }
-
-  void _scheduleDeveloperReply(String projectId, String userContent, MessageContext? context) {
-    Future.delayed(const Duration(milliseconds: 1400), () {
-      String replyText = "I see your message! Let's check the code.";
-
-      if (context?.errorSummary != null || userContent.toLowerCase().contains('nameerror') || userContent.toLowerCase().contains('error') || userContent.toLowerCase().contains('fix')) {
-        if (context?.errorTraceback?.contains('pritn') == true || userContent.contains('pritn')) {
-          replyText = "I spotted the issue in line ${context?.lineStart ?? 22}: you have a typo in `pritn()`. Replace it with `print()` and rerun the script in the sandbox!";
-        } else {
-          replyText = "Looking at the traceback context:\n`${context?.errorSummary ?? 'Traceback'}`\nMake sure all referenced identifiers and imports are defined before calling them in your main execution loop.";
-        }
-      } else if (context?.codeSnippet != null) {
-        replyText = "Thanks for attaching the snippet from `${context?.fileName}` (lines ${context?.lineStart}-${context?.lineEnd}). The logic looks sound! Consider adding type hints for better readability.";
-      } else {
-        replyText = "Got your question regarding the project! I've inspected your current workspace snapshot. What specific logic would you like to optimize?";
+      final list = _conversations[projectId] ?? [];
+      list.add(response.userMessage);
+      if (response.aiReply != null) {
+        list.add(response.aiReply!);
+        WebSocketClient().emit('chat.message', {
+          'conversationId': projectId,
+          'message': response.aiReply!.toJson(),
+        });
       }
+      _conversations[projectId] = list;
 
-      final devMsg = ChatMessage(
-        id: 'msg_${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}',
+      return response.userMessage;
+    } catch (e) {
+      final msgId = 'msg_${DateTime.now().millisecondsSinceEpoch}';
+      final userMsg = ChatMessage(
+        id: msgId,
         conversationId: projectId,
         projectId: projectId,
-        senderId: 'usr_mentor',
-        senderName: 'Marcus Vance (Staff Eng)',
-        senderType: MessageSenderType.developer,
-        content: replyText,
+        senderId: _currentUser?.id ?? 'usr_001',
+        senderName: _currentUser?.name ?? 'You',
+        senderType: MessageSenderType.user,
+        content: content,
         createdAt: DateTime.now(),
         status: MessageDeliveryStatus.delivered,
+        contextAttachment: context,
       );
-
-      _conversations[projectId]?.add(devMsg);
-      WebSocketClient().emit('chat.message', {'conversationId': projectId, 'message': devMsg.toJson()});
-
-      // Also create a notification
-      final notif = NotificationModel(
-        id: 'notif_${DateTime.now().millisecondsSinceEpoch}',
-        userId: _currentUser?.id ?? 'usr_001',
-        title: 'Marcus Vance replied',
-        body: replyText.length > 80 ? '${replyText.substring(0, 80)}...' : replyText,
-        type: NotificationType.chatReply,
-        projectId: projectId,
-        conversationId: projectId,
-        createdAt: DateTime.now(),
-      );
-      _notifications.insert(0, notif);
-    });
+      final list = _conversations[projectId] ?? [];
+      list.add(userMsg);
+      _conversations[projectId] = list;
+      return userMsg;
+    }
   }
 
   void markNotificationAsRead(String id) {

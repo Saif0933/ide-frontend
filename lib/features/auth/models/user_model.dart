@@ -50,14 +50,25 @@ class UserModel {
   }
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
+    DateTime parsedDate;
+    try {
+      if (json['createdAt'] != null) {
+        parsedDate = DateTime.parse(json['createdAt'].toString());
+      } else {
+        parsedDate = DateTime.now();
+      }
+    } catch (_) {
+      parsedDate = DateTime.now();
+    }
+
     return UserModel(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      email: json['email'] as String,
-      phone: json['phone'] as String?,
-      role: json['role'] as String? ?? 'developer',
-      avatarUrl: json['avatarUrl'] as String? ?? '',
-      createdAt: DateTime.parse(json['createdAt'] as String),
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? '',
+      email: json['email']?.toString() ?? '',
+      phone: json['phone']?.toString(),
+      role: json['role']?.toString() ?? 'developer',
+      avatarUrl: json['avatarUrl']?.toString() ?? '',
+      createdAt: parsedDate,
     );
   }
 }

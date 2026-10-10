@@ -1,14 +1,17 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:frontend/features/auth/controllers/auth_controller.dart';
+import 'package:frontend/features/auth/presentation/widgets/auth_background.dart';
 import 'package:frontend/features/dashboard/presentation/screens/main_navigation_shell.dart';
+import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   final AuthController authController;
+  final String? initialEmail;
 
   const LoginScreen({
     super.key,
     required this.authController,
+    this.initialEmail,
   });
 
   @override
@@ -16,12 +19,12 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _emailOrUsernameController = TextEditingController();
-  final _passwordController = TextEditingController();
+  late final TextEditingController _emailController;
+  late final TextEditingController _passwordController;
   final _formKey = GlobalKey<FormState>();
   bool _obscurePassword = true;
 
-  // Custom colors matching the exact design image
+  // Custom colors matching the design system
   static const Color _primaryBlue = Color(0xFF3E6F97);
   static const Color _cardBackground = Colors.white;
   static const Color _titleColor = Color(0xFF111827);
@@ -33,30 +36,31 @@ class _LoginScreenState extends State<LoginScreen> {
   static const Color _textColor = Color(0xFF1E293B);
 
   @override
+  void initState() {
+    super.initState();
+    _emailController = TextEditingController(text: widget.initialEmail ?? '');
+    _passwordController = TextEditingController();
+    widget.authController.clearError();
+  }
+
+  @override
   void dispose() {
-    _emailOrUsernameController.dispose();
+    _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
   Future<void> _handleSignIn() async {
-    final contact = _emailOrUsernameController.text.trim();
-    final password = _passwordController.text.trim();
+    widget.authController.clearError();
 
-    if (contact.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter your email or username'),
-          backgroundColor: Color(0xFFDC2626),
-        ),
-      );
+    if (!_formKey.currentState!.validate()) {
       return;
     }
 
-    final success = await widget.authController.signInWithPassword(
-      contact,
-      password.isNotEmpty ? password : 'password123',
-    );
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    final success = await widget.authController.signInWithPassword(email, password);
 
     if (success && mounted) {
       Navigator.of(context).pushAndRemoveUntil(
@@ -69,10 +73,10 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _handleSignUp() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Registration is open. Enter your email to receive an access pass.'),
-        backgroundColor: _primaryBlue,
+    widget.authController.clearError();
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (ctx) => RegisterScreen(authController: widget.authController),
       ),
     );
   }
@@ -84,7 +88,7 @@ class _LoginScreenState extends State<LoginScreen> {
         fit: StackFit.expand,
         children: [
           // Blurred Modern Office Interior Background
-          const _ModernOfficeBlurredBackground(),
+          const ModernOfficeBlurredBackground(),
 
           // Decorative sparkle on bottom right
           Positioned(
@@ -154,9 +158,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         const SizedBox(height: 28),
 
-                        // Email or Username Text Field
+                        // Email Text Field
                         TextFormField(
-                          controller: _emailOrUsernameController,
+                          controller: _emailController,
                           keyboardType: TextInputType.emailAddress,
                           textInputAction: TextInputAction.next,
                           cursorColor: _primaryBlue,
@@ -165,17 +169,27 @@ class _LoginScreenState extends State<LoginScreen> {
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
                           ),
+                          validator: (val) {
+                            if (val == null || val.trim().isEmpty) {
+                              return 'Please enter your email address';
+                            }
+                            final emailRegExp = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                            if (!emailRegExp.hasMatch(val.trim())) {
+                              return 'Please enter a valid email address';
+                            }
+                            return null;
+                          },
                           decoration: InputDecoration(
                             filled: true,
                             fillColor: _inputBackground,
-                            hintText: 'Email or Username',
+                            hintText: 'Email Address',
                             hintStyle: const TextStyle(
                               color: _inputHint,
                               fontSize: 13.5,
                               fontWeight: FontWeight.w400,
                             ),
                             prefixIcon: const Icon(
-                              Icons.person_outline_rounded,
+                              Icons.email_outlined,
                               size: 20,
                               color: _inputIcon,
                             ),
@@ -191,6 +205,14 @@ class _LoginScreenState extends State<LoginScreen> {
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
                               borderSide: const BorderSide(color: _primaryBlue, width: 1.5),
+                            ),
+                            errorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1),
+                            ),
+                            focusedErrorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: const BorderSide(color: Color(0xFFDC2626), width: 1.5),
                             ),
                           ),
                         ),
@@ -208,6 +230,12 @@ class _LoginScreenState extends State<LoginScreen> {
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
                           ),
+                          validator: (val) {
+                            if (val == null || val.trim().isEmpty) {
+                              return 'Please enter your password';
+                            }
+                            return null;
+                          },
                           decoration: InputDecoration(
                             filled: true,
                             fillColor: _inputBackground,
@@ -230,6 +258,19 @@ class _LoginScreenState extends State<LoginScreen> {
                               borderRadius: BorderRadius.circular(8),
                               borderSide: const BorderSide(color: _primaryBlue, width: 1.5),
                             ),
+                            errorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1),
+                            ),
+                            focusedErrorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: const BorderSide(color: Color(0xFFDC2626), width: 1.5),
+                            ),
+                            prefixIcon: const Icon(
+                              Icons.lock_outline_rounded,
+                              size: 20,
+                              color: _inputIcon,
+                            ),
                             suffixIcon: IconButton(
                               icon: Icon(
                                 _obscurePassword
@@ -247,18 +288,46 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 16),
 
-                        // Error message if any
-                        if (widget.authController.errorMessage != null)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: Text(
-                              widget.authController.errorMessage!,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(fontSize: 12, color: Color(0xFFDC2626)),
-                            ),
-                          ),
+                        // Dynamic error message banner
+                        AnimatedBuilder(
+                          animation: widget.authController,
+                          builder: (context, _) {
+                            if (widget.authController.errorMessage == null) {
+                              return const SizedBox.shrink();
+                            }
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 14),
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFEF2F2),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: const Color(0xFFFCA5A5), width: 1),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(
+                                    Icons.error_outline_rounded,
+                                    size: 18,
+                                    color: Color(0xFFDC2626),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      widget.authController.errorMessage!,
+                                      style: const TextStyle(
+                                        fontSize: 12.5,
+                                        color: Color(0xFFDC2626),
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
 
                         // "Sign In" Button
                         AnimatedBuilder(
@@ -271,6 +340,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: _primaryBlue,
                                   foregroundColor: Colors.white,
+                                  disabledBackgroundColor: _primaryBlue.withValues(alpha: 0.6),
                                   elevation: 0,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8),
@@ -340,144 +410,3 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
-
-/// Custom painted blurred modern office background with perspective depth,
-/// architectural glass windows, pillars, and desk lighting.
-class _ModernOfficeBlurredBackground extends StatelessWidget {
-  const _ModernOfficeBlurredBackground();
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(
-      painter: _OfficeAtmospherePainter(),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-        child: Container(
-          color: const Color(0xFFC3D4E4).withValues(alpha: 0.35),
-        ),
-      ),
-    );
-  }
-}
-
-class _OfficeAtmospherePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final rect = Offset.zero & size;
-
-    // Base background gradient: cool airy office atmosphere
-    final bgPaint = Paint()
-      ..shader = const LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [
-          Color(0xFFEAF0F6),
-          Color(0xFFD6E3EE),
-          Color(0xFFB8CBDC),
-          Color(0xFF9FB7CD),
-        ],
-        stops: [0.0, 0.35, 0.7, 1.0],
-      ).createShader(rect);
-    canvas.drawRect(rect, bgPaint);
-
-    // Left window light zone (bright daylight from floor-to-ceiling windows)
-    final windowGlow = Paint()
-      ..shader = RadialGradient(
-        center: const Alignment(-0.85, -0.2),
-        radius: 0.9,
-        colors: [
-          const Color(0xFFFFFFFF).withValues(alpha: 0.85),
-          const Color(0xFFDCEAF5).withValues(alpha: 0.5),
-          Colors.transparent,
-        ],
-      ).createShader(rect);
-    canvas.drawRect(rect, windowGlow);
-
-    // Perspective window mullions / architectural frames on the left
-    final framePaint = Paint()
-      ..color = const Color(0xFF3B566E).withValues(alpha: 0.45)
-      ..strokeWidth = 14
-      ..style = PaintingStyle.stroke;
-
-    final path1 = Path()
-      ..moveTo(size.width * 0.08, 0)
-      ..lineTo(size.width * 0.18, size.height);
-    canvas.drawPath(path1, framePaint);
-
-    final path2 = Path()
-      ..moveTo(size.width * 0.22, 0)
-      ..lineTo(size.width * 0.28, size.height);
-    canvas.drawPath(path2, framePaint);
-
-    // Horizontal window beams
-    final beamPaint = Paint()
-      ..color = const Color(0xFF4A6882).withValues(alpha: 0.35)
-      ..strokeWidth = 8
-      ..style = PaintingStyle.stroke;
-    canvas.drawLine(
-      Offset(0, size.height * 0.22),
-      Offset(size.width * 0.38, size.height * 0.28),
-      beamPaint,
-    );
-    canvas.drawLine(
-      Offset(0, size.height * 0.55),
-      Offset(size.width * 0.38, size.height * 0.62),
-      beamPaint,
-    );
-
-    // Desks, partitions & monitors silhouettes in the background
-    final furniturePaint = Paint()..style = PaintingStyle.fill;
-
-    // Far desk row
-    furniturePaint.color = const Color(0xFF2C4356).withValues(alpha: 0.4);
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromLTWH(0, size.height * 0.60, size.width * 0.32, size.height * 0.25),
-        const Radius.circular(8),
-      ),
-      furniturePaint,
-    );
-
-    // Right glass conference room & dark modern monitors/chairs
-    furniturePaint.color = const Color(0xFF1E3345).withValues(alpha: 0.45);
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromLTWH(size.width * 0.72, size.height * 0.50, size.width * 0.26, size.height * 0.45),
-        const Radius.circular(12),
-      ),
-      furniturePaint,
-    );
-
-    // Ceiling linear lights
-    final lightPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.7)
-      ..strokeWidth = 6
-      ..style = PaintingStyle.stroke;
-    canvas.drawLine(
-      Offset(size.width * 0.25, size.height * 0.04),
-      Offset(size.width * 0.42, size.height * 0.08),
-      lightPaint,
-    );
-    canvas.drawLine(
-      Offset(size.width * 0.60, size.height * 0.05),
-      Offset(size.width * 0.78, size.height * 0.09),
-      lightPaint,
-    );
-
-    // Subtle blue atmospheric depth wash on right
-    final rightAtmosphere = Paint()
-      ..shader = RadialGradient(
-        center: const Alignment(0.85, 0.4),
-        radius: 0.8,
-        colors: [
-          const Color(0xFF2B475D).withValues(alpha: 0.3),
-          Colors.transparent,
-        ],
-      ).createShader(rect);
-    canvas.drawRect(rect, rightAtmosphere);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-

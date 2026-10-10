@@ -83,25 +83,51 @@ class ChatMessage {
   }
 
   factory ChatMessage.fromJson(Map<String, dynamic> json) {
+    MessageSenderType parseSenderType(dynamic val) {
+      final str = val?.toString().toLowerCase() ?? 'user';
+      if (str == 'developer' || str == 'assistant' || str == 'ai' || str == 'bot') {
+        return MessageSenderType.developer;
+      }
+      if (str == 'system') {
+        return MessageSenderType.system;
+      }
+      return MessageSenderType.user;
+    }
+
+    MessageDeliveryStatus parseStatus(dynamic val) {
+      final str = val?.toString().toLowerCase() ?? 'delivered';
+      if (str == 'sending') return MessageDeliveryStatus.sending;
+      if (str == 'sent') return MessageDeliveryStatus.sent;
+      if (str == 'read') return MessageDeliveryStatus.read;
+      if (str == 'failed') return MessageDeliveryStatus.failed;
+      return MessageDeliveryStatus.delivered;
+    }
+
+    MessageContext? parseContext(dynamic val) {
+      if (val == null) return null;
+      if (val is Map<String, dynamic>) {
+        return MessageContext.fromJson(val);
+      }
+      return null;
+    }
+
+    DateTime parseDate(dynamic val) {
+      if (val == null) return DateTime.now();
+      if (val is DateTime) return val;
+      return DateTime.tryParse(val.toString()) ?? DateTime.now();
+    }
+
     return ChatMessage(
-      id: json['id'] as String,
-      conversationId: json['conversationId'] as String,
-      projectId: json['projectId'] as String,
-      senderId: json['senderId'] as String,
-      senderName: json['senderName'] as String? ?? 'User',
-      senderType: MessageSenderType.values.firstWhere(
-        (e) => e.name == json['senderType'],
-        orElse: () => MessageSenderType.user,
-      ),
-      content: json['content'] as String,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      status: MessageDeliveryStatus.values.firstWhere(
-        (e) => e.name == json['status'],
-        orElse: () => MessageDeliveryStatus.delivered,
-      ),
-      contextAttachment: json['contextAttachment'] != null
-          ? MessageContext.fromJson(json['contextAttachment'] as Map<String, dynamic>)
-          : null,
+      id: json['id']?.toString() ?? 'msg_${DateTime.now().millisecondsSinceEpoch}',
+      conversationId: json['conversationId']?.toString() ?? json['projectId']?.toString() ?? '',
+      projectId: json['projectId']?.toString() ?? '',
+      senderId: json['senderId']?.toString() ?? 'usr_001',
+      senderName: json['senderName']?.toString() ?? (parseSenderType(json['senderType']) == MessageSenderType.developer ? 'AI Assistant' : 'You'),
+      senderType: parseSenderType(json['senderType']),
+      content: json['content']?.toString() ?? '',
+      createdAt: parseDate(json['createdAt']),
+      status: parseStatus(json['status']),
+      contextAttachment: parseContext(json['contextAttachment']),
     );
   }
 }

@@ -15,3 +15,6 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+
+news api key:- 014e4201054ed15435c593ddad16cedd
+mdssaif0103@gmail.com
